@@ -1,6 +1,4 @@
-use candid::{
-    encode_args, utils::ArgumentEncoder, CandidType, Deserialize, Encode, Principal,
-};
+use candid::{encode_args, utils::ArgumentEncoder, CandidType, Deserialize, Encode, Principal};
 
 use super::{Agent, Canister};
 use crate::{get_waiter, Result};
