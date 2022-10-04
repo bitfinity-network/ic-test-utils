@@ -13,8 +13,7 @@
 //! ```
 use std::fs::read_to_string;
 
-use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_agent::ic_types::Principal;
+use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_agent::{agent::UpdateBuilder, Agent};
 
 use super::Canister;

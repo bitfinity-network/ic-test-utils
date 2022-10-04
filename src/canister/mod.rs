@@ -11,9 +11,8 @@
 use std::marker::PhantomData;
 
 use crate::Result;
-use candid::{CandidType, Encode};
+use candid::{CandidType, Encode, Principal};
 use ic_agent::agent::{Agent, QueryBuilder, UpdateBuilder};
-use ic_agent::ic_types::Principal;
 
 mod management;
 mod wallet;

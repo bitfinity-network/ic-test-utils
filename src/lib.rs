@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use candid::utils::ArgumentEncoder;
-use ic_agent::ic_types::Principal;
+use candid::Principal;
 use ic_agent::identity::BasicIdentity;
 use ic_agent::{agent::http_transport::ReqwestHttpReplicaV2Transport, identity::PemError};
 
