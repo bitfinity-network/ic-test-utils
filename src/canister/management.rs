@@ -1,7 +1,7 @@
 use candid::{encode_args, utils::ArgumentEncoder, CandidType, Deserialize, Encode, Principal};
 
 use super::{Agent, Canister};
-use crate::{get_waiter, Result};
+use crate::Result;
 
 /// The install mode of the canister to install. If a canister is already installed,
 /// using [InstallMode::Install] will be an error. [InstallMode::Reinstall] overwrites
@@ -49,7 +49,7 @@ struct In {
 /// ```
 /// # use ic_agent::Agent;
 /// use ic_test_utils::canister::Canister;
-/// # async fn run(agent: &Agent, principal: ic_cdk::export::candid::Principal) {
+/// # async fn run(agent: &Agent, principal: candid::Principal) {
 /// let management = Canister::new_management(agent);
 /// management.stop_canister(&agent, principal).await;
 /// # }
@@ -82,7 +82,7 @@ impl<'agent> Canister<'agent, Management> {
         agent
             .update(&Principal::management_canister(), "install_code")
             .with_arg(args)
-            .call_and_wait(get_waiter())
+            .call_and_wait()
             .await?;
 
         Ok(())
@@ -137,7 +137,7 @@ impl<'agent> Canister<'agent, Management> {
         agent
             .update(&Principal::management_canister(), "stop_canister")
             .with_arg(arg)
-            .call_and_wait(get_waiter())
+            .call_and_wait()
             .await?;
         Ok(())
     }
@@ -153,7 +153,7 @@ impl<'agent> Canister<'agent, Management> {
         agent
             .update(&Principal::management_canister(), "delete_canister")
             .with_arg(arg)
-            .call_and_wait(get_waiter())
+            .call_and_wait()
             .await?;
         Ok(())
     }

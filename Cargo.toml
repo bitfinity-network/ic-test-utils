@@ -1,12 +1,12 @@
 [package]
 edition = "2021"
 name = "ic-test-utils"
-version = "0.2.0"
+version = "0.2.6"
 
 [dependencies]
 dirs = "4.0"
 garcon = "0.2"
-ic-agent = "0.21"
+ic-agent = "0.23.0"
 serde = "1.0"
 serde_json = "1.0"
 serde_bytes = "0.11"

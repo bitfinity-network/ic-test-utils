@@ -17,7 +17,6 @@ use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_agent::{agent::UpdateBuilder, Agent};
 
 use super::Canister;
-use crate::get_waiter;
 use crate::{Error, Result};
 
 pub const WALLET_IDS_PATH: &str = "../../.dfx/local/wallets.json";
@@ -100,7 +99,7 @@ impl<'agent> Canister<'agent, Wallet> {
         };
         let mut builder = self.agent.update(self.principal(), "wallet_call");
         builder.with_arg(&Encode!(&call_forward_args)?);
-        let data = builder.call_and_wait(get_waiter()).await?;
+        let data = builder.call_and_wait().await?;
         let val = Decode!(&data, std::result::Result<CallResult, String>)??;
         Ok(val.payload)
     }
@@ -143,7 +142,7 @@ impl<'agent> Canister<'agent, Wallet> {
             },
         };
         builder.with_arg(&Encode!(&args)?);
-        let data = builder.call_and_wait(get_waiter()).await?;
+        let data = builder.call_and_wait().await?;
         let result = Decode!(&data, std::result::Result<CreateResult, String>)??;
         Ok(result.canister_id)
     }
