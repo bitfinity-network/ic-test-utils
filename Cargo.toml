@@ -6,7 +6,7 @@ version = "0.2.0"
 [dependencies]
 dirs = "4.0"
 garcon = "0.2"
-ic-agent = "0.21"
+ic-agent = "0.23"
 serde = "1.0"
 serde_json = "1.0"
 serde_bytes = "0.11"
