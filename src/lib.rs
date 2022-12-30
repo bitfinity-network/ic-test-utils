@@ -4,7 +4,7 @@ use std::path::Path;
 
 use candid::utils::ArgumentEncoder;
 use candid::Principal;
-use ic_agent::identity::BasicIdentity;
+use ic_agent::identity::Secp256k1Identity;
 use ic_agent::{agent::http_transport::ReqwestHttpReplicaV2Transport, identity::PemError};
 
 pub use ic_agent::Agent;
@@ -23,13 +23,14 @@ const URL: &str = "http://localhost:8000";
 ///
 /// If this is ever needed outside of `get_agent` just make this
 /// function public.
-pub fn get_identity(account_name: impl AsRef<Path>) -> Result<BasicIdentity> {
+pub fn get_identity(account_name: impl AsRef<Path>) -> Result<Secp256k1Identity> {
     let mut ident_path = dirs::home_dir().ok_or(crate::Error::MissingConfig)?;
     ident_path.push(".config");
     ident_path.push("dfx/identity");
     ident_path.push(account_name);
     ident_path.push("identity.pem");
-    match BasicIdentity::from_pem_file(&ident_path) {
+
+    match Secp256k1Identity::from_pem_file(&ident_path) {
         Ok(identity) => Ok(identity),
         Err(PemError::Io(e)) if e.kind() == std::io::ErrorKind::NotFound => {
             Err(Error::CertNotFound(ident_path))
@@ -65,7 +66,7 @@ pub async fn get_agent(name: impl Into<&str>, url: Option<&str>) -> Result<Agent
 }
 
 /// Create a default `Delay` with a throttle of 500ms
-/// and a timout of five minutes.
+/// and a timeout of five minutes.
 pub fn get_waiter() -> garcon::Delay {
     garcon::Delay::builder()
         .throttle(std::time::Duration::from_millis(500))
