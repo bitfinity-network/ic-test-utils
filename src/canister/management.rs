@@ -1,4 +1,7 @@
-use candid::{encode_args, utils::ArgumentEncoder, CandidType, Deserialize, Encode, Principal};
+use std::borrow::Cow;
+
+use candid::utils::ArgumentEncoder;
+use candid::{encode_args, CandidType, Deserialize, Encode, Principal};
 
 use super::{Agent, Canister};
 use crate::Result;
@@ -21,14 +24,15 @@ pub enum InstallMode {
 
 /// Installation arguments for [`Canister::install_code`].
 #[derive(CandidType, Deserialize)]
-pub struct CanisterInstall {
+pub struct CanisterInstall<'a> {
     /// [`InstallMode`]
     pub mode: InstallMode,
     /// Canister id
     pub canister_id: Principal,
-    #[serde(with = "serde_bytes")]
     /// Wasm module as raw bytes
-    pub wasm_module: Vec<u8>,
+    #[serde(with = "serde_bytes")]
+    #[serde(borrow)]
+    pub wasm_module: Cow<'a, [u8]>,
     #[serde(with = "serde_bytes")]
     /// Any aditional arguments to be passed along
     pub arg: Vec<u8>,
@@ -49,7 +53,7 @@ struct In {
 /// ```
 /// # use ic_agent::Agent;
 /// use ic_test_utils::canister::Canister;
-/// # async fn run(agent: &Agent, principal: ic_cdk::export::candid::Principal) {
+/// # async fn run(agent: &Agent, principal: candid::Principal) {
 /// let management = Canister::new_management(agent);
 /// management.stop_canister(&agent, principal).await;
 /// # }
@@ -63,11 +67,11 @@ impl<'agent> Canister<'agent, Management> {
         Self::new(id, agent)
     }
 
-    async fn _install_code<'wallet_agent, T: ArgumentEncoder>(
+    async fn _install_code<T: ArgumentEncoder>(
         &self,
         agent: &Agent,
         canister_id: Principal,
-        bytecode: Vec<u8>,
+        bytecode: Cow<'_, [u8]>,
         mode: InstallMode,
         arg: T,
     ) -> Result<()> {
@@ -94,7 +98,7 @@ impl<'agent> Canister<'agent, Management> {
         &self,
         agent: &Agent,
         canister_id: Principal,
-        bytecode: Vec<u8>,
+        bytecode: Cow<'_, [u8]>,
         arg: T,
     ) -> Result<()> {
         self._install_code(agent, canister_id, bytecode, InstallMode::Install, arg)
@@ -107,7 +111,7 @@ impl<'agent> Canister<'agent, Management> {
         &self,
         agent: &Agent,
         canister_id: Principal,
-        bytecode: Vec<u8>,
+        bytecode: Cow<'_, [u8]>,
         arg: T,
     ) -> Result<()> {
         self._install_code(agent, canister_id, bytecode, InstallMode::Reinstall, arg)
@@ -120,7 +124,7 @@ impl<'agent> Canister<'agent, Management> {
         &self,
         agent: &Agent,
         canister_id: Principal,
-        bytecode: Vec<u8>,
+        bytecode: Cow<'_, [u8]>,
         arg: T,
     ) -> Result<()> {
         self._install_code(agent, canister_id, bytecode, InstallMode::Upgrade, arg)
