@@ -1,5 +1,6 @@
 #![deny(missing_docs)]
 #![doc = include_str!("../README.md")]
+use std::borrow::Cow;
 use std::path::Path;
 
 use candid::utils::ArgumentEncoder;
@@ -79,7 +80,7 @@ pub fn get_waiter() -> garcon::Delay {
 pub async fn create_canister<T: ArgumentEncoder>(
     agent: &Agent,
     account_name: impl AsRef<str>,
-    bytecode: Vec<u8>,
+    bytecode: Cow<'_, [u8]>,
     arg: T,
     cycles: u64,
 ) -> Result<Principal> {
