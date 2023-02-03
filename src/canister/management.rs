@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
-use candid::{encode_args, utils::ArgumentEncoder, CandidType, Deserialize, Encode, Principal};
+use candid::utils::ArgumentEncoder;
+use candid::{encode_args, CandidType, Deserialize, Encode, Principal};
 
 use super::{Agent, Canister};
 use crate::Result;
@@ -66,7 +67,7 @@ impl<'agent> Canister<'agent, Management> {
         Self::new(id, agent)
     }
 
-    async fn _install_code<'wallet_agent, T: ArgumentEncoder>(
+    async fn _install_code<T: ArgumentEncoder>(
         &self,
         agent: &Agent,
         canister_id: Principal,
