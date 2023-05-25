@@ -12,6 +12,8 @@
 //! # }
 //! ```
 
+use std::process::Command;
+
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_agent::{agent::UpdateBuilder, Agent};
 
@@ -20,13 +22,13 @@ use crate::{Error, Result};
 
 fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
     use_identity(account_name.as_ref())?;
-    let output = std::process::Command::new("dfx")
+    let output = Command::new("dfx")
         .arg("identity")
         .arg("get-wallet")
         .output()
         .expect("failed to execute process");
 
-    let stdout = String::from_utf8(output.stdout).map_err(|_| Error::InvalidOrMissingAccount)?;
+    let stdout = String::from_utf8(output.stdout).expect("invalid utf8");
 
     let principal = Principal::from_text(stdout.trim())?;
     Ok(principal)
@@ -34,7 +36,7 @@ fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
 
 /// Use an identity for the dfx environment.
 pub fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
-    let output = std::process::Command::new("dfx")
+    let output = Command::new("dfx")
         .arg("identity")
         .arg("use")
         .arg(account_name.as_ref().to_lowercase())
