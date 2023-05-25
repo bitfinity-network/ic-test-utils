@@ -84,7 +84,7 @@ pub async fn create_canister<T: ArgumentEncoder>(
     arg: T,
     cycles: u64,
 ) -> Result<Principal> {
-    let wallet = Canister::new_wallet(agent, account_name, None)?;
+    let wallet = Canister::new_wallet(agent, account_name)?;
     let management = Canister::new_management(agent);
     let canister_id = wallet.create_canister(cycles, None).await?;
     management

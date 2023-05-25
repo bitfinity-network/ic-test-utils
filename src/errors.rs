@@ -5,8 +5,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Error type
 pub enum Error {
     /// Identity missing from the json
-    #[error("Invalid or missing account name in json structure")]
-    InvalidOrMissingAccountInJson,
+    #[error("Invalid or missing account name in identity config")]
+    InvalidOrMissingAccount,
 
     /// A principal error
     #[error("Principal error: {0}")]
