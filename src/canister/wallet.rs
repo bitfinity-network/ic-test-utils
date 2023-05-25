@@ -11,7 +11,6 @@
 //! let wallet = Canister::new_wallet(&agent, user, None);
 //! # }
 //! ```
-use std::fs::read_to_string;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_agent::{agent::UpdateBuilder, Agent};
@@ -19,20 +18,34 @@ use ic_agent::{agent::UpdateBuilder, Agent};
 use super::Canister;
 use crate::{Error, Result};
 
-pub const WALLET_IDS_PATH: &str = "../../.dfx/local/wallets.json";
+fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
+    use_identity(account_name.as_ref())?;
+    let output = std::process::Command::new("dfx")
+        .arg("identity")
+        .arg("get-wallet")
+        .output()
+        .expect("failed to execute process");
 
-fn get_wallet_principal<'a>(
-    account_name: impl AsRef<str>,
-    wallet_id_path: impl Into<Option<&'a str>>,
-) -> Result<Principal> {
-    let wallet_id_path = wallet_id_path.into().unwrap_or(WALLET_IDS_PATH);
-    let json_str = read_to_string(wallet_id_path)?;
-    let json = serde_json::from_str::<serde_json::Value>(&json_str)?;
-    let id = json["identities"][account_name.as_ref()]["local"]
-        .as_str()
-        .ok_or(Error::InvalidOrMissingAccountInJson)?;
-    let principal = Principal::from_text(id)?;
+    let stdout = String::from_utf8(output.stdout).map_err(|_| Error::InvalidOrMissingAccount)?;
+
+    let principal = Principal::from_text(stdout.trim())?;
     Ok(principal)
+}
+
+/// Use an identity for the dfx environment.
+pub fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
+    let output = std::process::Command::new("dfx")
+        .arg("identity")
+        .arg("use")
+        .arg(account_name.as_ref().to_lowercase())
+        .status()
+        .expect("failed to execute process");
+
+    if !output.success() {
+        return Err(Error::InvalidOrMissingAccount);
+    }
+
+    Ok(())
 }
 
 /// The balance result of a `Wallet::balance` call.
@@ -70,12 +83,8 @@ impl<'agent> Canister<'agent, Wallet> {
     /// Create a new wallet canister.
     /// If the `wallet_id_path` is `None` then the default [`WALLET_IDS_PATH`] will
     /// be used.
-    pub fn new_wallet<'a>(
-        agent: &'agent Agent,
-        account_name: impl AsRef<str>,
-        wallet_id_path: impl Into<Option<&'a str>>,
-    ) -> Result<Self> {
-        let id = get_wallet_principal(account_name, wallet_id_path)?;
+    pub fn new_wallet(agent: &'agent Agent, account_name: impl AsRef<str>) -> Result<Self> {
+        let id = get_wallet_principal(account_name)?;
         let inst = Self::new(id, agent);
         Ok(inst)
     }
