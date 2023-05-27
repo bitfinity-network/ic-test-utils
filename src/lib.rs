@@ -92,3 +92,17 @@ pub async fn create_canister<T: ArgumentEncoder>(
         .await?;
     Ok(canister_id)
 }
+
+/// Reinstall the code for a canister.
+pub async fn reinstall_canister<T: ArgumentEncoder>(
+    agent: &Agent,
+    canister_id: Principal,
+    bytecode: Cow<'_, [u8]>,
+    arg: T,
+) -> Result<()> {
+    let management = Canister::new_management(agent);
+    management
+        .reinstall_code(agent, canister_id, bytecode, arg)
+        .await?;
+    Ok(())
+}

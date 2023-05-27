@@ -20,6 +20,8 @@ mod wallet;
 pub use management::Management;
 pub use wallet::Wallet;
 
+pub use management::InstallMode;
+
 /// Type alias for the management canister
 pub type ManagementCanister<'agent> = Canister<'agent, Management>;
 
