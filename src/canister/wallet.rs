@@ -23,8 +23,9 @@ use super::Canister;
 use crate::{Error, Result};
 
 const MAX_RETRIES: u32 = 3;
-const RETRY_DELAY: u64 = 1000; // milliseconds
+const RETRY_DELAY: Duration = Duration::from_millis(1_000); // milliseconds
 
+/// Get the principal of a wallet.
 fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
     use_identity(account_name)?;
     let output = execute_command_with_retry("dfx", &["identity", "get-wallet"], MAX_RETRIES)?;
@@ -33,6 +34,7 @@ fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
     Ok(principal)
 }
 
+/// Use an identity.
 fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
     execute_command_with_retry(
         "dfx",
@@ -42,6 +44,7 @@ fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
     Ok(())
 }
 
+/// Execute a command with retries.
 fn execute_command_with_retry(command: &str, args: &[&str], max_retries: u32) -> Result<Output> {
     for retry in 0..=max_retries {
         match execute_command(command, args) {
@@ -53,7 +56,7 @@ fn execute_command_with_retry(command: &str, args: &[&str], max_retries: u32) ->
                 }
             }
             Err(_) if retry < max_retries => {
-                thread::sleep(Duration::from_millis(RETRY_DELAY));
+                thread::sleep(RETRY_DELAY);
             }
             Err(_) => return Err(Error::CommandExecutionFailed),
         }
@@ -61,6 +64,7 @@ fn execute_command_with_retry(command: &str, args: &[&str], max_retries: u32) ->
     Err(Error::CommandExecutionFailed)
 }
 
+/// Execute a command.
 fn execute_command(command: &str, args: &[&str]) -> std::result::Result<Output, std::io::Error> {
     Command::new(command).args(args).output()
 }
