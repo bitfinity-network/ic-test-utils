@@ -55,6 +55,10 @@ pub enum Error {
     /// Invalid memory size error
     #[error("Memory allocation must be between 0 and 2^48 (i.e 256TB), inclusively. Got {0}.")]
     InvalidMemorySize(u64),
+
+    /// Command execution failed
+    #[error("Command execution failed")]
+    CommandExecutionFailed,
 }
 
 impl From<String> for Error {
