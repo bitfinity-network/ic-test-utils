@@ -12,7 +12,9 @@
 //! # }
 //! ```
 
-use std::process::Command;
+use std::process::{Command, Output};
+use std::thread;
+use std::time::Duration;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_agent::{agent::UpdateBuilder, Agent};
@@ -20,34 +22,51 @@ use ic_agent::{agent::UpdateBuilder, Agent};
 use super::Canister;
 use crate::{Error, Result};
 
+const MAX_RETRIES: u32 = 3;
+const RETRY_DELAY: Duration = Duration::from_millis(1_000); // milliseconds
+
+/// Get the principal of a wallet.
 fn get_wallet_principal(account_name: impl AsRef<str>) -> Result<Principal> {
-    use_identity(account_name.as_ref())?;
-    let output = Command::new("dfx")
-        .arg("identity")
-        .arg("get-wallet")
-        .output()
-        .expect("failed to execute process");
-
+    use_identity(account_name)?;
+    let output = execute_command_with_retry("dfx", &["identity", "get-wallet"], MAX_RETRIES)?;
     let stdout = String::from_utf8(output.stdout).expect("invalid utf8");
-
     let principal = Principal::from_text(stdout.trim())?;
     Ok(principal)
 }
 
-/// Use an identity for the dfx environment.
-pub fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
-    let output = Command::new("dfx")
-        .arg("identity")
-        .arg("use")
-        .arg(account_name.as_ref().to_lowercase())
-        .status()
-        .expect("failed to execute process");
-
-    if !output.success() {
-        return Err(Error::InvalidOrMissingAccount);
-    }
-
+/// Use an identity.
+fn use_identity(account_name: impl AsRef<str>) -> Result<()> {
+    execute_command_with_retry(
+        "dfx",
+        &["identity", "use", &account_name.as_ref().to_lowercase()],
+        MAX_RETRIES,
+    )?;
     Ok(())
+}
+
+/// Execute a command with retries.
+fn execute_command_with_retry(command: &str, args: &[&str], max_retries: u32) -> Result<Output> {
+    for retry in 0..=max_retries {
+        match execute_command(command, args) {
+            Ok(output) => {
+                if output.status.success() {
+                    return Ok(output);
+                } else {
+                    return Err(Error::InvalidOrMissingAccount);
+                }
+            }
+            Err(_) if retry < max_retries => {
+                thread::sleep(RETRY_DELAY);
+            }
+            Err(_) => return Err(Error::CommandExecutionFailed),
+        }
+    }
+    Err(Error::CommandExecutionFailed)
+}
+
+/// Execute a command.
+fn execute_command(command: &str, args: &[&str]) -> std::result::Result<Output, std::io::Error> {
+    Command::new(command).args(args).output()
 }
 
 /// The balance result of a `Wallet::balance` call.
