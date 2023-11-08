@@ -1,12 +1,13 @@
 #![deny(missing_docs)]
 #![doc = include_str!("../README.md")]
-use std::borrow::Cow;
-use std::path::Path;
-
 use candid::utils::ArgumentEncoder;
 use candid::Principal;
+
+use ic_agent::agent::http_transport::reqwest_transport::ReqwestHttpReplicaV2Transport;
+use ic_agent::identity::PemError;
 use ic_agent::identity::Secp256k1Identity;
-use ic_agent::{agent::http_transport::ReqwestHttpReplicaV2Transport, identity::PemError};
+use std::borrow::Cow;
+use std::path::Path;
 
 pub use ic_agent::Agent;
 

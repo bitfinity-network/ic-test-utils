@@ -54,12 +54,11 @@ impl<'agent, T> Canister<'agent, T> {
         method_name: impl Into<String>,
         args: Option<A>,
     ) -> Result<UpdateBuilder<'_>> {
-        let mut builder = self.agent.update(&self.id, method_name);
-        if let Some(ref args) = args {
-            let args = Encode!(args)?;
-            builder.with_arg(args);
-        }
-        Ok(builder)
+        let builder = self.agent.update(&self.id, method_name);
+
+        let args = args.map(|args| Encode!(&args)).transpose()?;
+
+        Ok(builder.with_arg(args.unwrap_or_default()))
     }
 
     /// Query the canister
