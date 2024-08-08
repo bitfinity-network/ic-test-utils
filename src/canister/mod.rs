@@ -57,7 +57,7 @@ impl<'agent, T> Canister<'agent, T> {
         let mut builder = self.agent.update(&self.id, method_name);
         if let Some(ref args) = args {
             let args = Encode!(args)?;
-            builder.with_arg(args);
+            builder = builder.with_arg(args);
         }
         Ok(builder)
     }
