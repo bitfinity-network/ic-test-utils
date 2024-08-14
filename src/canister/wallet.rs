@@ -113,7 +113,7 @@ impl<'agent> Canister<'agent, Wallet> {
     /// Get the current balance of a canister
     pub async fn balance(&self) -> Result<BalanceResult> {
         let mut builder = self.agent.query(self.principal(), "wallet_balance");
-        builder.with_arg(&Encode!(&())?);
+        builder = builder.with_arg(Encode!(&())?);
         let data = builder.call().await?;
         let balance = Decode!(&data, BalanceResult)?;
         Ok(balance)
@@ -128,7 +128,7 @@ impl<'agent> Canister<'agent, Wallet> {
             cycles,
         };
         let mut builder = self.agent.update(self.principal(), "wallet_call");
-        builder.with_arg(&Encode!(&call_forward_args)?);
+        builder = builder.with_arg(Encode!(&call_forward_args)?);
         let data = builder.call_and_wait().await?;
         let val = Decode!(&data, std::result::Result<CallResult, String>)??;
         Ok(val.payload)
@@ -171,7 +171,7 @@ impl<'agent> Canister<'agent, Wallet> {
                 freezing_threshold: None,
             },
         };
-        builder.with_arg(&Encode!(&args)?);
+        builder = builder.with_arg(Encode!(&args)?);
         let data = builder.call_and_wait().await?;
         let result = Decode!(&data, std::result::Result<CreateResult, String>)??;
         Ok(result.canister_id)
